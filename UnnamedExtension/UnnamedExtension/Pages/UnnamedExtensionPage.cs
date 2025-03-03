@@ -26,8 +26,8 @@ internal sealed partial class UnnamedExtensionPage : ListPage
             { "title", "Sample Title" },
             { "label", "Name" },
             { "id", "name" },
-            { "validation", "^[a-zA-Z]+$" },
-            { "error", "Name must be alphabetic" }
+            { "validation", ".*" },
+            { "error", "Name cannot be empty" }
         };
 
         var textContentTemplate = new Template(new TemplateLoader(), "D:\\fhl\\UnnamedExtension\\UnnamedExtension\\Templates\\TextPageTemplate.json", replacements);
