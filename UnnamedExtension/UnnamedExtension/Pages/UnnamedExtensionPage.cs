@@ -4,6 +4,9 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using System.Collections.Generic;
+using System.Reflection.Emit;
+using UnnamedExtension.Templates;
 
 namespace UnnamedExtension;
 
@@ -18,8 +21,18 @@ internal sealed partial class UnnamedExtensionPage : ListPage
 
     public override IListItem[] GetItems()
     {
+        var replacements = new Dictionary<string, string>
+        {
+            { "title", "Sample Title" },
+            { "label", "Name" },
+            { "id", "name" },
+            { "validation", "^[a-zA-Z]+$" },
+            { "error", "Name must be alphabetic" }
+        };
+
+        var textContentTemplate = new Template(new TemplateLoader(), "D:\\fhl\\UnnamedExtension\\UnnamedExtension\\Templates\\TextPageTemplate.json", replacements);
         return [
-            new ListItem(new TextContentPage()) { Title = "Text Content Page" }
+            new ListItem(new TextContentPage(textContentTemplate)) { Title = "Text Content Page" }
         ];
     }
 }
