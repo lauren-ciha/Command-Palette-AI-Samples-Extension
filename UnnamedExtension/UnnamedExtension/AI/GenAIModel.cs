@@ -4,19 +4,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection.Emit;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnnamedExtension.AI;
-using Windows.ApplicationModel.Chat;
 
 namespace AIDevGallery.Sample.Utils;
 
+#pragma warning disable CsWinRT1028 // Class is not marked partial
 internal class GenAIModel : IChatClient
+#pragma warning restore CsWinRT1028 // Class is not marked partial
 {
     private const string TEMPLATE_PLACEHOLDER = "{{CONTENT}}";
 
