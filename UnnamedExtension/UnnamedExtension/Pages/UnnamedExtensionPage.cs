@@ -23,8 +23,8 @@ internal sealed partial class UnnamedExtensionPage : ListPage
     {
         var replacements = new Dictionary<string, string>
         {
-            { "title", "Sample Title" },
-            { "label", "Name" },
+            { "title", "Generate Text" },
+            { "placeholder", "Enter a topic to generate text on..." },
             { "id", "name" },
             { "validation", ".*" },
             { "error", "Name cannot be empty" }

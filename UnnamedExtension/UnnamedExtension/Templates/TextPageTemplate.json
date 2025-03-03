@@ -16,10 +16,10 @@
       "items": [
         {
           "type": "Input.Text",
-          "label": "{{label}}",
           "id": "{{id}}",
           "regex": "{{validation}}",
           "errorMessage": "{{error}}",
+          "placeholder": "{{placeholder}}",
           "isRequired": true
         }
       ]
@@ -53,6 +53,19 @@
           ]
         }
       ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "Output",
+      "weight": "bolder",
+      "size": "medium",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "",
+      "color": "transparent",
+      "wrap": true
     }
   ]
 }
