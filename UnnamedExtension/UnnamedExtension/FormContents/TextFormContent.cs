@@ -19,12 +19,16 @@ namespace UnnamedExtension.FormContents
             var formInput = JsonNode.Parse(inputs)?.AsObject();
             if (formInput == null)
             {
-                return CommandResult.GoHome();
+                return CommandResult.ShowToast(new ToastArgs
+                {
+                    Message = "Invalid input",
+                    Result = CommandResult.KeepOpen(),
+                });
             }
 
             OnSubmit?.Invoke(this, formInput["name"]?.ToString() ?? string.Empty);
 
-            return CommandResult.GoHome();
+            return CommandResult.KeepOpen();
         }
     }
 }
