@@ -5,7 +5,7 @@
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using System.Collections.Generic;
-using System.Reflection.Emit;
+using UnnamedExtension.FormContents;
 using UnnamedExtension.Templates;
 
 namespace UnnamedExtension;
@@ -31,8 +31,10 @@ internal sealed partial class UnnamedExtensionPage : ListPage
         };
 
         var textContentTemplate = new Template(new TemplateLoader(), "D:\\fhl\\UnnamedExtension\\UnnamedExtension\\Templates\\TextPageTemplate.json", replacements);
+        var formContent = new TextFormContent(textContentTemplate.TemplateJson);
         return [
-            new ListItem(new TextContentPage(textContentTemplate)) { Title = "Text Content Page" }
+            new ListItem(new TextContentPage(formContent)) { Title = "Text Content Page" },
+            new ListItem(new GenerateTextPage(formContent)) { Title = "Generate Text Page" }
         ];
     }
 }

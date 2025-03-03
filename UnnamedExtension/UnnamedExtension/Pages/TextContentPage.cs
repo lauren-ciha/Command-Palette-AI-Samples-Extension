@@ -4,7 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using UnnamedExtension.Templates;
+using UnnamedExtension.FormContents;
 
 namespace UnnamedExtension;
 
@@ -12,12 +12,28 @@ internal sealed partial class TextContentPage : ContentPage
 {
     FormContent _formContent;
 
-    public TextContentPage(Template template)
+    public TextContentPage(TextFormContent formContent)
     {
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
         Title = "Text Content Page";
         Name = "Open";
-        _formContent = CreateFormContent(template);
+        _formContent = formContent;
+
+        if (_formContent is TextFormContent textFormContent)
+        {
+            textFormContent.OnSubmit += TextFormContent_OnSubmit;
+        }
+    }
+
+    private void TextFormContent_OnSubmit(object? sender, string inputs)
+    {
+        var statusMessage = new StatusMessage
+        {
+            Message = inputs,
+            State = MessageState.Success,
+        };
+        var toast = new ToastStatusMessage(statusMessage);
+        toast.Show();
     }
 
     public override IContent[] GetContent()
@@ -26,14 +42,5 @@ internal sealed partial class TextContentPage : ContentPage
         [
             _formContent
         ];
-    }
-
-#pragma warning disable CA1822 // Mark members as static
-    private FormContent CreateFormContent(Template template)
-#pragma warning restore CA1822 // Mark members as static
-    {
-        var formContent = new FormContent();
-        formContent.TemplateJson = template.TemplateJson;
-        return formContent;
     }
 }
