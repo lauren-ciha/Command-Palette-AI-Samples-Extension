@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>UnnamedExtension</RootNamespace>
@@ -23,6 +23,7 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Models\*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,11 +40,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CommandPalette.Extensions" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
-
+    
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
     Explorer "Package and Publish" context menu entry to be enabled for this project even if
