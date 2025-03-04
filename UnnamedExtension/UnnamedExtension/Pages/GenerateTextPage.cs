@@ -7,6 +7,7 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.AI;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UnnamedExtension.AI;
@@ -14,12 +15,12 @@ using UnnamedExtension.FormContents;
 
 namespace UnnamedExtension;
 
-internal sealed partial class GenerateTextPage : ContentPage
+internal sealed partial class GenerateTextPage : ContentPage, IDisposable
 {
     TextFormContent _formContent;
     private IChatClient? chatClient;
     private CancellationTokenSource? cts;
-    string message = string.Empty;
+    List<IContent> _contents;
 
     public GenerateTextPage(TextFormContent formContent)
     {
@@ -33,7 +34,9 @@ internal sealed partial class GenerateTextPage : ContentPage
             IsLoading = isLoading;
         };
         GenAIModel.InitializeGenAI();
-        
+        _contents = new List<IContent>();
+        _contents.Add(_formContent);
+
         chatClient = GetChatClientAsync().Result;
     }
 
@@ -54,6 +57,7 @@ internal sealed partial class GenerateTextPage : ContentPage
 
     public async Task<string> GenerateText(string topic)
     {
+        var message = string.Empty;
         if (chatClient == null)
         {
             return "chatClient is null";
@@ -83,17 +87,20 @@ internal sealed partial class GenerateTextPage : ContentPage
 
     private void TextFormContent_OnSubmit(object? sender, string inputs)
     {
+        if (_contents.Count > 1)
+        {
+            _contents.RemoveAt(1);
+            RaiseItemsChanged(_contents.Count);
+        }
+
         try
         {
-            var toastThis = GenerateText(inputs).Result;
+            var response = new MarkdownContent();
+            response.Body = GenerateText(inputs).Result;
+            _contents.Add(response);
+            RaiseItemsChanged(_contents.Count);
             IsLoading = false;
-            var statusMessage = new StatusMessage
-            {
-                Message = toastThis,
-                State = MessageState.Success,
-            };
-            ToastStatusMessage toast = new ToastStatusMessage(statusMessage);
-            toast.Show();
+
         }
         catch (Exception ex)
         {
@@ -106,18 +113,11 @@ internal sealed partial class GenerateTextPage : ContentPage
             ToastStatusMessage toast = new ToastStatusMessage(statusMessage);
             toast.Show();
         }
-        finally
-        {
-            CleanUp();
-        }
     }
 
     public override IContent[] GetContent()
     {
-        return
-        [
-            _formContent
-        ];
+        return _contents.ToArray();
     }
 
     private void CleanUp()
@@ -132,5 +132,17 @@ internal sealed partial class GenerateTextPage : ContentPage
         cts?.Cancel();
         cts?.Dispose();
         cts = null;
+    }
+
+    public void Dispose()
+    {
+        chatClient?.Dispose();
+        cts?.Dispose();
+        _formContent.OnSubmit -= TextFormContent_OnSubmit;
+        _formContent.IsLoadingChanged -= (sender, isLoading) =>
+        {
+            IsLoading = isLoading;
+        };
+        CleanUp();
     }
 }

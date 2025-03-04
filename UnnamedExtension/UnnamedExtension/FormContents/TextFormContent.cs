@@ -45,5 +45,12 @@ namespace UnnamedExtension.FormContents
                 });
             }
         }
+
+        public void Dispose()
+        {
+            // Unsubscribe from events
+            OnSubmit = null;
+            IsLoadingChanged = null;
+        }
     }
 }
