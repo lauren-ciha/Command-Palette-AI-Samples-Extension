@@ -1,4 +1,4 @@
-﻿namespace AIDevGallery.Sample.Utils;
+namespace AIDevGallery.Sample.Utils;
 
 internal enum HardwareAccelerator
 {

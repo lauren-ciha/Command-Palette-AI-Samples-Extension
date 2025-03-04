@@ -23,7 +23,7 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <Content Include="Models\*" />
+    <Content Include="Models\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,12 +39,19 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" />
     <PackageReference Include="Microsoft.CommandPalette.Extensions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Extensions" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Qnn" Condition="$(Platform) == 'ARM64'" Version="1.20.2" />
     <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Web.WebView2" />
+    <PackageReference Include="NumSharp" />
+    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
     
   <!--
@@ -63,7 +70,12 @@
     <!-- Suppress DynamicallyAccessedMemberTypes.PublicParameterlessConstructor in fallback code path of Windows SDK projection -->
     <WarningsNotAsErrors>IL2081</WarningsNotAsErrors>
 
-    <PublishTrimmed>true</PublishTrimmed>
+    <!-- Publish Properties -->
+    <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
+    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
+    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
+    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+      
     <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 </Project>
