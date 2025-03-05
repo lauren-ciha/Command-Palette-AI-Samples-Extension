@@ -36,6 +36,7 @@ internal sealed partial class UnnamedExtensionPage : ListPage
         return [
             new ListItem(new GenerateTextPage(formContent)) { Title = "Generate Text Page" },
             new ListItem(new GenerateImagePage(formContent)) { Title = "Generate Image Page" },
+            new ListItem(new TranscribeAudioPage()) { Title = "Transcribe Audio Page" },
         ];
     }
 }
