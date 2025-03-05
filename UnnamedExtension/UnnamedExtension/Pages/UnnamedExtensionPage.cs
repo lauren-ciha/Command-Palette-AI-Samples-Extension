@@ -35,7 +35,7 @@ internal sealed partial class UnnamedExtensionPage : ListPage
         var formContent = new TextFormContent(textContentTemplate.TemplateJson);
         return [
             new ListItem(new GenerateTextPage(formContent)) { Title = "Generate Text Page" },
-            new ListItem(new GenerateImagePage(formContent)) { Title = "Generate Image Page" }
+            new ListItem(new GenerateImagePage(formContent)) { Title = "Generate Image Page" },
         ];
     }
 }
