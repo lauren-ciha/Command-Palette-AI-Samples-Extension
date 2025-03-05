@@ -51,6 +51,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Web.WebView2" />
+    <PackageReference Include="NAudio.WinMM" />
     <PackageReference Include="NumSharp" />
     <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>

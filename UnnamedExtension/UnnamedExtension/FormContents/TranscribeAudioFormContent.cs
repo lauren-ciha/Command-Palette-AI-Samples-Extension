@@ -1,8 +1,13 @@
 ﻿using AdaptiveCards;
+using AIDevGallery.Sample.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using NAudio.Wave;
 using System;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using Windows.Media.Capture;
 using Windows.Media.MediaProperties;
 using Windows.Storage;
@@ -17,6 +22,12 @@ namespace FormContents
         private MediaCapture mediaCapture;
         private InMemoryRandomAccessStream? audioStream;
         private StorageFile? audioFile;
+        private WaveInEvent? waveIn;
+        private MemoryStream? memoryStream;
+        private WhisperWrapper whisper;
+        private CancellationTokenSource cts = new();
+        private System.Timers.Timer? recordingTimer;
+
         public event EventHandler<string>? OnSubmit;
 
         public TranscribeAudioFormContent(AudioACWrapper ac)
@@ -25,21 +36,33 @@ namespace FormContents
             TemplateJson = adaptiveCard.ToJson();
             mediaCapture = new MediaCapture();
             audioStream = new InMemoryRandomAccessStream();
+            InitializeWhisperWrapper();
+        }
+
+        private async void InitializeWhisperWrapper()
+        {
+            whisper = await WhisperWrapper.CreateAsync(Path.Combine(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", "whisper_small_int8_cpu_ort_1.18.0.onnx"));
         }
 
         private async Task StartRecordingAsync()
         {
             try
             {
-                var settings = new MediaCaptureInitializationSettings
+                memoryStream = new MemoryStream();
+                waveIn = new WaveInEvent
                 {
-                    StreamingCaptureMode = StreamingCaptureMode.Audio
+                    WaveFormat = new WaveFormat(16000, 1)
                 };
+                waveIn.DataAvailable += (s, a) =>
+                {
+                    memoryStream.Write(a.Buffer, 0, a.BytesRecorded);
+                };
+                waveIn.StartRecording();
 
-                await mediaCapture.InitializeAsync(settings);
-
-                var profile = MediaEncodingProfile.CreateMp3(AudioEncodingQuality.Auto);
-                await mediaCapture.StartRecordToStreamAsync(profile, audioStream);
+                recordingTimer = new System.Timers.Timer(30000);
+                recordingTimer.Elapsed += OnRecordingTimerElapsed;
+                recordingTimer.AutoReset = false;
+                recordingTimer.Start();
 
                 isRecording = true;
                 adaptiveCard.SetRecordButtonTitle("Stop Recording");
@@ -52,19 +75,26 @@ namespace FormContents
             }
         }
 
+        private async void OnRecordingTimerElapsed(object? sender, ElapsedEventArgs e)
+        {
+            await StopRecordingAsync();
+        }
+
         private async Task StopRecordingAsync()
         {
             try
             {
-                await mediaCapture.StopRecordAsync();
+                recordingTimer?.Stop();
+                recordingTimer?.Dispose();
+
+                waveIn?.StopRecording();
+                waveIn?.Dispose();
+
                 isRecording = false;
                 adaptiveCard.SetRecordButtonTitle("Record");
 
-                // Save the audio to a file
-                audioFile = await SaveAudioToFileAsync();
-
-                // Transcribe the audio (this is a placeholder, replace with actual transcription logic)
-                string transcriptionResult = "Transcription result goes here.";
+                // Transcribe the audio
+                string transcriptionResult = await TranscribeAudio();
 
                 adaptiveCard.SetMarkdownText(transcriptionResult);
 
@@ -74,6 +104,27 @@ namespace FormContents
             {
                 ShowToastMessage("Error stopping recording: " + ex.Message);
             }
+        }
+
+        private async Task<string> TranscribeAudio()
+        {
+            if (memoryStream == null)
+            {
+                return "No audio recorded";
+            }
+
+            var audioData = memoryStream.ToArray();
+            var sourceLanguage = "English"; // Assuming English for simplicity
+            if (sourceLanguage == null || !WhisperWrapper.LanguageCodes.ContainsKey(sourceLanguage))
+            {
+                return "Invalid language selected";
+            }
+
+            cts = new CancellationTokenSource();
+
+            var transcribedChunks = await whisper.TranscribeAsync(audioData, sourceLanguage, WhisperWrapper.TaskType.Transcribe, false, cts.Token);
+
+            return transcribedChunks;
         }
 
         private async Task<StorageFile> SaveAudioToFileAsync()
@@ -134,6 +185,13 @@ namespace FormContents
                 audioStream.Dispose();
                 audioStream = null;
             }
+            cts?.Cancel();
+            cts?.Dispose();
+            whisper?.Dispose();
+            waveIn?.Dispose();
+            memoryStream?.Dispose();
+            recordingTimer?.Stop();
+            recordingTimer?.Dispose();
             GC.SuppressFinalize(this);
         }
     }
