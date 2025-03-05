@@ -1,4 +1,5 @@
-﻿using Microsoft.CommandPalette.Extensions;
+﻿using AdaptiveCards;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using System;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace FormContents
         private MediaCapture mediaCapture;
         private InMemoryRandomAccessStream? audioStream;
         private StorageFile? audioFile;
+        public event EventHandler<string>? OnSubmit;
 
         public TranscribeAudioFormContent(AudioACWrapper ac)
         {
@@ -29,7 +31,6 @@ namespace FormContents
         {
             try
             {
-                adaptiveCard.SetRecordButtonTitle("Stop Recording");
                 var settings = new MediaCaptureInitializationSettings
                 {
                     StreamingCaptureMode = StreamingCaptureMode.Audio
@@ -43,6 +44,7 @@ namespace FormContents
                 isRecording = true;
                 adaptiveCard.SetRecordButtonTitle("Stop Recording");
                 adaptiveCard.SetMarkdownText("Recording... Click 'Stop Recording' to finish.");
+                OnSubmit?.Invoke(this, adaptiveCard.ToJson());
             }
             catch (Exception ex)
             {
@@ -66,8 +68,7 @@ namespace FormContents
 
                 adaptiveCard.SetMarkdownText(transcriptionResult);
 
-                // Pass the file path to the OnSubmit() function
-                SubmitForm(audioFile.Path);
+                OnSubmit?.Invoke(this, adaptiveCard.ToJson());
             }
             catch (Exception ex)
             {
