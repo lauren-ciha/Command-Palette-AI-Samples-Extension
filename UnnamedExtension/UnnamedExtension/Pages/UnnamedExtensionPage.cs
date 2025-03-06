@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FormContents;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Pages;
@@ -33,9 +34,12 @@ internal sealed partial class UnnamedExtensionPage : ListPage
 
         var textContentTemplate = new Template(new TemplateLoader(), "D:\\fhl\\UnnamedExtension\\UnnamedExtension\\Templates\\TextPageTemplate.json", replacements);
         var formContent = new TextFormContent(textContentTemplate.TemplateJson);
+        var audioAdaptiveCard = new AudioACWrapper();
+        var audioFormContent = new TranscribeAudioFormContent(audioAdaptiveCard);
         return [
             new ListItem(new GenerateTextPage(formContent)) { Title = "Generate Text Page" },
             new ListItem(new GenerateImagePage(formContent)) { Title = "Generate Image Page" },
+            new ListItem(new TranscribeAudioPage(audioFormContent)) { Title = "Transcribe Audio Page" },
         ];
     }
 }

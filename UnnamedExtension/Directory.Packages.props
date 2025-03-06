@@ -17,6 +17,7 @@
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.1.5" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.7.250127003-experimental3" />
+    <PackageVersion Include="NAudio.WinMM" Version="2.2.1" />
     <PackageVersion Include="NumSharp" Version="0.30.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="System.Drawing.Common" Version="9.0.2" />

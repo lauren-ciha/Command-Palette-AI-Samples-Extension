@@ -39,6 +39,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AdaptiveCards" />
     <PackageReference Include="MathNet.Numerics" />
     <PackageReference Include="Microsoft.CommandPalette.Extensions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
@@ -50,6 +51,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Web.WebView2" />
+    <PackageReference Include="NAudio.WinMM" />
     <PackageReference Include="NumSharp" />
     <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
