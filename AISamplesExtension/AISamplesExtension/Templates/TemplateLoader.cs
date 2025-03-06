@@ -22,7 +22,8 @@ namespace AISamplesExtension.Templates
         };
 
             var templateLoader = new TemplateLoader();
-            var templateJson = templateLoader.ReplaceTemplateKeys(templateLoader.LoadTemplateAsync(Path.Combine("Templates", templateName)).Result, replacements);
+            var parentFolder = System.IO.Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Templates");
+            var templateJson = templateLoader.ReplaceTemplateKeys(templateLoader.LoadTemplateAsync(Path.Combine(parentFolder, templateName)).Result, replacements);
             return templateJson;
         }
 
