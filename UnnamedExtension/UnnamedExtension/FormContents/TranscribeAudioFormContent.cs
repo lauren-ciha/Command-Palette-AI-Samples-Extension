@@ -24,10 +24,9 @@ namespace FormContents
         private StorageFile? audioFile;
         private WaveInEvent? waveIn;
         private MemoryStream? memoryStream;
-        private WhisperWrapper whisper;
         private CancellationTokenSource cts = new();
         private System.Timers.Timer? recordingTimer;
-
+        private WhisperWrapper Whisper => lazyWhisper.Value;
         public event EventHandler<string>? OnSubmit;
 
         public TranscribeAudioFormContent(AudioACWrapper ac)
@@ -36,13 +35,12 @@ namespace FormContents
             TemplateJson = adaptiveCard.ToJson();
             mediaCapture = new MediaCapture();
             audioStream = new InMemoryRandomAccessStream();
-            InitializeWhisperWrapper();
         }
 
-        private async void InitializeWhisperWrapper()
+        private Lazy<WhisperWrapper> lazyWhisper = new Lazy<WhisperWrapper>(() =>
         {
-            whisper = await WhisperWrapper.CreateAsync(Path.Combine(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", "whisper_small_int8_cpu_ort_1.18.0.onnx"));
-        }
+            return WhisperWrapper.CreateAsync(Path.Combine(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", "whisper_small_int8_cpu_ort_1.18.0.onnx")).Result;
+        });
 
         private async Task StartRecordingAsync()
         {
@@ -69,6 +67,14 @@ namespace FormContents
                 adaptiveCard.SetMarkdownText("Recording... Click 'Stop Recording' to finish.");
                 OnSubmit?.Invoke(this, adaptiveCard.ToJson());
             }
+            catch (IOException ioEx)
+            {
+                ShowToastMessage("I/O error starting recording: " + ioEx.Message);
+            }
+            catch (UnauthorizedAccessException uaEx)
+            {
+                ShowToastMessage("Access error starting recording: " + uaEx.Message);
+            }
             catch (Exception ex)
             {
                 ShowToastMessage("Error starting recording: " + ex.Message);
@@ -86,9 +92,11 @@ namespace FormContents
             {
                 recordingTimer?.Stop();
                 recordingTimer?.Dispose();
+                recordingTimer = null;
 
                 waveIn?.StopRecording();
                 waveIn?.Dispose();
+                waveIn = null;
 
                 isRecording = false;
                 adaptiveCard.SetRecordButtonTitle("Record");
@@ -103,6 +111,11 @@ namespace FormContents
             catch (Exception ex)
             {
                 ShowToastMessage("Error stopping recording: " + ex.Message);
+            }
+            finally
+            {
+                memoryStream?.Dispose();
+                memoryStream = null;
             }
         }
 
@@ -122,7 +135,7 @@ namespace FormContents
 
             cts = new CancellationTokenSource();
 
-            var transcribedChunks = await whisper.TranscribeAsync(audioData, sourceLanguage, WhisperWrapper.TaskType.Transcribe, false, cts.Token);
+            var transcribedChunks = await Whisper.TranscribeAsync(audioData, sourceLanguage, WhisperWrapper.TaskType.Transcribe, false, cts.Token);
 
             return transcribedChunks;
         }
@@ -187,7 +200,7 @@ namespace FormContents
             }
             cts?.Cancel();
             cts?.Dispose();
-            whisper?.Dispose();
+            Whisper?.Dispose();
             waveIn?.Dispose();
             memoryStream?.Dispose();
             recordingTimer?.Stop();
