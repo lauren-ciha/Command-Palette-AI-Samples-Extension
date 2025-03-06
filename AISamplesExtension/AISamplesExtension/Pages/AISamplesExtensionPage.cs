@@ -52,7 +52,7 @@ internal sealed partial class AISamplesExtensionPage : ListPage
             var stopwatch = Stopwatch.StartNew();
             var imageTemplateReplacements = new Dictionary<string, string>
             {
-                { "title", "Generate Image" },
+                { "title", "Generate Image (note: This may take a while)" },
                 { "placeholder", "Describe an image to generate..." },
                 { "id", "name" },
                 { "validation", ".*" },
