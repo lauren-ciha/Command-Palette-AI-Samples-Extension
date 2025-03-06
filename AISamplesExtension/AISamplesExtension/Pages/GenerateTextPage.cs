@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using UnnamedExtension.AI;
-using UnnamedExtension.FormContents;
+using AISamplesExtension.AI;
+using AISamplesExtension.FormContents;
 
-namespace UnnamedExtension;
+namespace AISamplesExtension;
 
 internal sealed partial class GenerateTextPage : ContentPage, IDisposable
 {

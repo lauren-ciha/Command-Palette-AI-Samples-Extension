@@ -2,7 +2,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 
-namespace UnnamedExtension.Helpers
+namespace AISamplesExtension.Helpers
 {
     public static class ImageHelper
     {

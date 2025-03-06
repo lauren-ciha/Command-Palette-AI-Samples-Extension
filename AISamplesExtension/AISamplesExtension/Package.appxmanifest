@@ -9,12 +9,12 @@
   IgnorableNamespaces="uap uap3 rescap">
 
   <Identity
-    Name="UnnamedExtension"
+    Name="AISamplesExtension"
     Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="0.0.1.0" />
 
   <Properties>
-    <DisplayName>UnnamedExtension</DisplayName>
+    <DisplayName>AISamplesExtension</DisplayName>
     <PublisherDisplayName>A Lone Developer</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -33,8 +33,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="UnnamedExtension"
-        Description="UnnamedExtension"
+        DisplayName="AISamplesExtension"
+        Description="AISamplesExtension"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
@@ -44,8 +44,8 @@
       <Extensions>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
-            <com:ExeServer Executable="UnnamedExtension.exe" Arguments="-RegisterProcessAsComServer" DisplayName="UnnamedExtension">
-              <com:Class Id="19404d9b-4eec-4276-ae52-deb60b775709" DisplayName="UnnamedExtension" />
+            <com:ExeServer Executable="AISamplesExtension.exe" Arguments="-RegisterProcessAsComServer" DisplayName="AISamplesExtension">
+              <com:Class Id="19404d9b-4eec-4276-ae52-deb60b775709" DisplayName="AISamplesExtension" />
             </com:ExeServer>
           </com:ComServer>
         </com:Extension>
@@ -53,8 +53,8 @@
           <uap3:AppExtension Name="com.microsoft.commandpalette"
             Id="PG-SP-ID"
             PublicFolder="Public"
-            DisplayName="UnnamedExtension"
-            Description="UnnamedExtension">
+            DisplayName="AISamplesExtension"
+            Description="AISamplesExtension">
             <uap3:Properties>
               <CmdPalProvider>
                 <Activation>

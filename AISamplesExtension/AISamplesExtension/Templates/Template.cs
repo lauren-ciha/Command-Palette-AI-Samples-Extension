@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace UnnamedExtension.Templates
+namespace AISamplesExtension.Templates
 {
     public class Template 
     {

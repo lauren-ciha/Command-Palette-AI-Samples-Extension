@@ -4,9 +4,9 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using UnnamedExtension.FormContents;
+using AISamplesExtension.FormContents;
 
-namespace UnnamedExtension;
+namespace AISamplesExtension;
 
 internal sealed partial class TextContentPage : ContentPage
 {

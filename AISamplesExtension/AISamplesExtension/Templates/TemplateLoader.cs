@@ -4,7 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace UnnamedExtension.Templates
+namespace AISamplesExtension.Templates
 {
     public class TemplateLoader
     {
@@ -22,7 +22,8 @@ namespace UnnamedExtension.Templates
         };
 
             var templateLoader = new TemplateLoader();
-            var templateJson = templateLoader.ReplaceTemplateKeys(templateLoader.LoadTemplateAsync($"D:\\fhl\\UnnamedExtension\\UnnamedExtension\\Templates\\{templateName}").Result, replacements);
+            var parentFolder = System.IO.Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Templates");
+            var templateJson = templateLoader.ReplaceTemplateKeys(templateLoader.LoadTemplateAsync(Path.Combine(parentFolder, templateName)).Result, replacements);
             return templateJson;
         }
 

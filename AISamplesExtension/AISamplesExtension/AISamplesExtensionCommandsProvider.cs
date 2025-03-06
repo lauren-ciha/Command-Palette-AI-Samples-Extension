@@ -5,18 +5,18 @@
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace UnnamedExtension;
+namespace AISamplesExtension;
 
-public partial class UnnamedExtensionCommandsProvider : CommandProvider
+public partial class AISamplesExtensionCommandsProvider : CommandProvider
 {
     private readonly ICommandItem[] _commands;
 
-    public UnnamedExtensionCommandsProvider()
+    public AISamplesExtensionCommandsProvider()
     {
-        DisplayName = "UnnamedExtension";
+        DisplayName = "AI Samples Extension";
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
         _commands = [
-            new CommandItem(new UnnamedExtensionPage()) { Title = DisplayName },
+            new CommandItem(new AISamplesExtensionPage()) { Title = DisplayName },
         ];
     }
 

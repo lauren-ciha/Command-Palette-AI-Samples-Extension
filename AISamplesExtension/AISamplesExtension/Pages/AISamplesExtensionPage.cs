@@ -7,25 +7,23 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Pages;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.Json;
-using UnnamedExtension.FormContents;
-using UnnamedExtension.Templates;
+using AISamplesExtension.FormContents;
+using AISamplesExtension.Templates;
 
-namespace UnnamedExtension;
+namespace AISamplesExtension;
 
-internal sealed partial class UnnamedExtensionPage : ListPage
+internal sealed partial class AISamplesExtensionPage : ListPage
 {
     private Lazy<GenerateTextPage> _generateTextPage;
     private Lazy<GenerateImagePage> _generateImagePage;
     private Lazy<TranscribeAudioPage> _transcribeAudioPage;
     private Lazy<TextFormContent> _textFormContent;
 
-    public UnnamedExtensionPage()
+    public AISamplesExtensionPage()
     {
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
-        Title = "UnnamedExtension";
+        Title = "AI Samples Extension";
         Name = "Open";
 
         // lazy initialize TextFormContent
