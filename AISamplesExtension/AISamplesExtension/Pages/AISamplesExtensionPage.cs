@@ -22,7 +22,7 @@ internal sealed partial class AISamplesExtensionPage : ListPage
 
     public AISamplesExtensionPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        Icon = new IconInfo("\uE99A");
         Title = "AI Samples Extension";
         Name = "Open";
 

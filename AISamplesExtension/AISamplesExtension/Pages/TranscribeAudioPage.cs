@@ -14,7 +14,7 @@ namespace Pages
 
         public TranscribeAudioPage(TranscribeAudioFormContent transcribeAudioFormContent)
         {
-            Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+            Icon = new IconInfo("\uE720");
             Title = "Trascribe Audio Page";
             Name = "Open";
             _formContent = transcribeAudioFormContent;

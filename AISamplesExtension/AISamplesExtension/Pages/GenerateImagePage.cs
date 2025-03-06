@@ -30,7 +30,7 @@ namespace Pages
 
         public GenerateImagePage(TextFormContent textFormContent)
         {
-            Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+            Icon = new IconInfo("\uE8B9");
             Title = "Generate Image";
             Name = "Open";
             _textFormContent = textFormContent;
