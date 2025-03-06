@@ -46,7 +46,8 @@
               "actions": [
                 {
                   "type": "Action.Submit",
-                  "title": "Submit"
+                  "title": "Submit",
+                  "id": "submitButton"
                 }
               ]
             }
@@ -55,10 +56,10 @@
       ]
     },
     {
-      "type": "TextBlock",
-      "text": "Output",
-      "weight": "bolder",
       "size": "medium",
+      "text": "Output",
+      "type": "TextBlock",
+      "weight": "bolder",
       "wrap": true
     },
     {
