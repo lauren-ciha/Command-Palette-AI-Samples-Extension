@@ -19,7 +19,7 @@ namespace Pages
     {
         private TextFormContent _textFormContent;
         private List<IContent> _contents;
-        private TemplateLoader _templateLoader = new TemplateLoader();
+        private TemplateLoader _templateLoader = new();
         private string prompt = string.Empty;
         private bool modelReady;
         private CancellationTokenSource cts = new();
@@ -65,7 +65,7 @@ namespace Pages
                 IsLoading = false;
                 var statusMessage = new StatusMessage
                 {
-                    Message = "Model is not ready.",
+                    Message = "Model is not ready. Please try again.",
                     State = MessageState.Info,
                 };
                 ToastStatusMessage toast = new ToastStatusMessage(statusMessage);
