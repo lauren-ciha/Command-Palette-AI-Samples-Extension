@@ -13,7 +13,7 @@ public partial class AISamplesExtensionCommandsProvider : CommandProvider
 
     public AISamplesExtensionCommandsProvider()
     {
-        DisplayName = "AISamplesExtension";
+        DisplayName = "AI Samples Extension";
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
         _commands = [
             new CommandItem(new AISamplesExtensionPage()) { Title = DisplayName },
