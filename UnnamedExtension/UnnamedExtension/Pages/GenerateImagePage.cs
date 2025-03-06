@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using UnnamedExtension.FormContents;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
+using UnnamedExtension.Templates;
 
 namespace Pages
 {
@@ -17,6 +19,7 @@ namespace Pages
     {
         private TextFormContent _textFormContent;
         private List<IContent> _contents;
+        private TemplateLoader _templateLoader = new();
         private string prompt = string.Empty;
         private bool modelReady;
         private CancellationTokenSource cts = new();
@@ -38,7 +41,8 @@ namespace Pages
             };
             _contents = new List<IContent>();
             _contents.Add(_textFormContent);
-            LoadStableDiffusion().Wait();
+
+            Task.Run(() => LoadStableDiffusion());
         }
 
         private async Task LoadStableDiffusion()
@@ -56,6 +60,19 @@ namespace Pages
 
         private async void TextFormContent_OnSubmit(object? sender, object inputs)
         {
+            if (modelReady == false)
+            {
+                IsLoading = false;
+                var statusMessage = new StatusMessage
+                {
+                    Message = "Model is not ready. Please try again.",
+                    State = MessageState.Info,
+                };
+                ToastStatusMessage toast = new ToastStatusMessage(statusMessage);
+                toast.Show();
+                return;
+            }
+
             if (inputs is Exception ex)
             {
                 HandleError(ex);
@@ -70,7 +87,7 @@ namespace Pages
                     {
                         string imagePath = genImagePath;
                         response.Body = $"See image below:\nImagePath:{imagePath}\n\n![Generated Image]({imagePath})";
-                        _contents.Add(response);
+                        _contents.Insert(1, response);
                         RaiseItemsChanged(_contents.Count);
                     }
                     else
@@ -100,16 +117,17 @@ namespace Pages
 
         private async Task DoStableDiffusion(string inputs)
         {
-            Debug.WriteLine($"Generating image with prompt: {inputs}");
+            var stopwatch = Stopwatch.StartNew();
+            Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - Generating image with prompt: {inputs}");
             if (!modelReady || isCanceling)
             {
-                Debug.WriteLine("Model is not ready or is canceling.");
+                Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - Model is not ready or is canceling.");
                 return;
             }
 
             if (inferenceTask != null)
             {
-                Debug.WriteLine("Inference task is already running. Canceling the previous task.");
+                Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - Inference task is already running. Canceling the previous task.");
                 cts.Cancel();
                 isCanceling = true;
                 await inferenceTask;
@@ -119,28 +137,31 @@ namespace Pages
 
             if (stableDiffusion == null)
             {
-                Debug.WriteLine("StableDiffusion is not initialized.");
+                Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - StableDiffusion is not initialized.");
                 return;
             }
             if (string.IsNullOrEmpty(inputs))
             {
-                Debug.WriteLine("Prompt is empty.");
+                Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - Prompt is empty.");
                 return;
             }
             prompt = inputs;
 
-            CancellationToken token = CancelGenerationAndGetNewToken();
-            Debug.WriteLine($"Token received. Prompt: {prompt}");
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(4));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, timeoutCts.Token);
+            CancellationToken token = linkedCts.Token;
+
+            Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - Token received. Prompt: {prompt}");
             inferenceTask = Task.Run(
                 async () =>
                 {
                     try
                     {
                         var res = stableDiffusion!.Inference(prompt, token);
-                        Debug.WriteLine($"Inference result: {res}");
+                        Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - Inference result: {res}");
                         if (res is Bitmap image)
                         {
-                            string filePath = System.IO.Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Assets", "GeneratedImage.png");
+                            string filePath = System.IO.Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Assets", $"{prompt}.png");
                             SaveBitmapAsPng(image, filePath);
                             genImagePath = filePath;
                         }
@@ -149,20 +170,35 @@ namespace Pages
                             throw new ArgumentException("The inference did not return a valid image.");
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        if (timeoutCts.IsCancellationRequested)
+                        {
+                            var statusMessage = new StatusMessage
+                            {
+                                Message = "Image generation timed out. Please try again.",
+                                State = MessageState.Info,
+                            };
+                            ToastStatusMessage toast = new ToastStatusMessage(statusMessage);
+                            toast.Show();
+                        }
+                        else
+                        {
+                            Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - Inference task was canceled.");
+                        }
+                    }
                     catch (Exception ex)
                     {
-                        if (ex is not OperationCanceledException)
-                        {
-                            HandleError(ex);
-                        }
+                        HandleError(ex);
                     }
                 },
                 token);
 
             await inferenceTask;
-            Debug.WriteLine("Inference task completed. Setting to null");
+            Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - Inference task completed. Setting to null");
             inferenceTask = null;
-
+            stopwatch.Stop();
+            Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - DoStableDiffusion completed in {stopwatch.ElapsedMilliseconds} ms");
         }
 
         private CancellationToken CancelGenerationAndGetNewToken()

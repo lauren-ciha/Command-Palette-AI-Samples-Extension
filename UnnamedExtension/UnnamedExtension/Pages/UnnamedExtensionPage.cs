@@ -6,7 +6,10 @@ using FormContents;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Pages;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.Json;
 using UnnamedExtension.FormContents;
 using UnnamedExtension.Templates;
 
@@ -14,32 +17,70 @@ namespace UnnamedExtension;
 
 internal sealed partial class UnnamedExtensionPage : ListPage
 {
+    private Lazy<GenerateTextPage> _generateTextPage;
+    private Lazy<GenerateImagePage> _generateImagePage;
+    private Lazy<TranscribeAudioPage> _transcribeAudioPage;
+    private Lazy<TextFormContent> _textFormContent;
+
     public UnnamedExtensionPage()
     {
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
         Title = "UnnamedExtension";
         Name = "Open";
+
+        // lazy initialize TextFormContent
+        _textFormContent = new Lazy<TextFormContent>(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var textFormContent = new TextFormContent(new TemplateLoader().LoadTemplate("TextPageTemplate.json", false));
+            stopwatch.Stop();
+            Debug.WriteLine($"TextFormContent construction time: {stopwatch.ElapsedMilliseconds} ms");
+            return textFormContent;
+        });
+
+        // Initialize lazy loading for pages and models
+        _generateTextPage = new Lazy<GenerateTextPage>(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var page = new GenerateTextPage(_textFormContent.Value);
+            stopwatch.Stop();
+            Debug.WriteLine($"GenerateTextPage construction time: {stopwatch.ElapsedMilliseconds} ms");
+            return page;
+        });
+
+        _generateImagePage = new Lazy<GenerateImagePage>(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var page = new GenerateImagePage(_textFormContent.Value);
+            stopwatch.Stop();
+            Debug.WriteLine($"GenerateImagePage construction time: {stopwatch.ElapsedMilliseconds} ms");
+            return page;
+        });
+
+        _transcribeAudioPage = new Lazy<TranscribeAudioPage>(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var page = new TranscribeAudioPage(new TranscribeAudioFormContent(new AudioACWrapper()));
+            stopwatch.Stop();
+            Debug.WriteLine($"TranscribeAudioPage construction time: {stopwatch.ElapsedMilliseconds} ms");
+            return page;
+        });
     }
 
     public override IListItem[] GetItems()
     {
-        var replacements = new Dictionary<string, string>
+        var stopwatch = Stopwatch.StartNew(); // Start timing
+
+        var items = new IListItem[]
         {
-            { "title", "Generate Text" },
-            { "placeholder", "Enter a topic to generate text on..." },
-            { "id", "name" },
-            { "validation", ".*" },
-            { "error", "Name cannot be empty" }
+            new ListItem(_generateTextPage.Value) { Title = "Generate Text Page" },
+            new ListItem(_generateImagePage.Value) { Title = "Generate Image Page" },
+            new ListItem(_transcribeAudioPage.Value) { Title = "Transcribe Audio Page" },
         };
 
-        var textContentTemplate = new Template(new TemplateLoader(), "D:\\fhl\\UnnamedExtension\\UnnamedExtension\\Templates\\TextPageTemplate.json", replacements);
-        var formContent = new TextFormContent(textContentTemplate.TemplateJson);
-        var audioAdaptiveCard = new AudioACWrapper();
-        var audioFormContent = new TranscribeAudioFormContent(audioAdaptiveCard);
-        return [
-            new ListItem(new GenerateTextPage(formContent)) { Title = "Generate Text Page" },
-            new ListItem(new GenerateImagePage(formContent)) { Title = "Generate Image Page" },
-            new ListItem(new TranscribeAudioPage(audioFormContent)) { Title = "Transcribe Audio Page" },
-        ];
+        stopwatch.Stop(); // Stop timing
+        Debug.WriteLine($"GetItems() method execution time: {stopwatch.ElapsedMilliseconds} ms");
+
+        return items;
     }
 }

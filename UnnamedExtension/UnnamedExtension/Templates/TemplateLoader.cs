@@ -1,12 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace UnnamedExtension.Templates
 {
     public class TemplateLoader
     {
+#pragma warning disable CA1822 // Mark members as static
+        public string LoadTemplate(string templateName, bool isSubmitEnabled)
+#pragma warning restore CA1822 // Mark members as static
+        {
+            var replacements = new Dictionary<string, string>
+        {
+            { "title", "Generate Text" },
+            { "placeholder", "Enter a topic to generate text on..." },
+            { "id", "name" },
+            { "validation", ".*" },
+            { "error", "Name cannot be empty" }
+        };
+
+            var templateLoader = new TemplateLoader();
+            var templateJson = templateLoader.ReplaceTemplateKeys(templateLoader.LoadTemplateAsync($"D:\\fhl\\UnnamedExtension\\UnnamedExtension\\Templates\\{templateName}").Result, replacements);
+            return templateJson;
+        }
+
 #pragma warning disable CA1822 // Mark members as static
         public async Task<string> LoadTemplateAsync(string fileName)
 #pragma warning restore CA1822 // Mark members as static
