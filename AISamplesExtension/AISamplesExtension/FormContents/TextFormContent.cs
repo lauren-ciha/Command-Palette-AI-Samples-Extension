@@ -3,7 +3,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 using System;
 using System.Text.Json.Nodes;
 
-namespace UnnamedExtension.FormContents
+namespace AISamplesExtension.FormContents
 {
     internal sealed partial class TextFormContent : FormContent
     {

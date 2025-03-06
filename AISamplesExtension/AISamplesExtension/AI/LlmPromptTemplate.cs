@@ -1,4 +1,4 @@
-﻿namespace UnnamedExtension.AI;
+﻿namespace AISamplesExtension.AI;
 
 internal class LlmPromptTemplate
 {

@@ -7,18 +7,18 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions;
 
-namespace UnnamedExtension;
+namespace AISamplesExtension;
 
 [ComVisible(true)]
 [Guid("19404d9b-4eec-4276-ae52-deb60b775709")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class UnnamedExtension : IExtension, IDisposable
+public sealed partial class AISamplesExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 
-    private readonly UnnamedExtensionCommandsProvider _provider = new();
+    private readonly AISamplesExtensionCommandsProvider _provider = new();
 
-    public UnnamedExtension(ManualResetEvent extensionDisposedEvent)
+    public AISamplesExtension(ManualResetEvent extensionDisposedEvent)
     {
         this._extensionDisposedEvent = extensionDisposedEvent;
     }

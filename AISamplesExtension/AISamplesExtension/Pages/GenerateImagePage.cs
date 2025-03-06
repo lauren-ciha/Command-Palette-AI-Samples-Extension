@@ -7,11 +7,11 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Threading;
 using System.Threading.Tasks;
-using UnnamedExtension.FormContents;
+using AISamplesExtension.FormContents;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using UnnamedExtension.Templates;
+using AISamplesExtension.Templates;
 
 namespace Pages
 {
