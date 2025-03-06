@@ -7,9 +7,7 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Pages;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.Json;
 using AISamplesExtension.FormContents;
 using AISamplesExtension.Templates;
 
@@ -25,7 +23,7 @@ internal sealed partial class AISamplesExtensionPage : ListPage
     public AISamplesExtensionPage()
     {
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
-        Title = "AISamplesExtension";
+        Title = "AI Samples Extension";
         Name = "Open";
 
         // lazy initialize TextFormContent
