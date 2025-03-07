@@ -2,6 +2,7 @@ using AdaptiveCards;
 using AIDevGallery.Sample.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -352,13 +353,10 @@ namespace FormContents
         {
             try
             {
-                // Parse the JSON data to determine which image was selected
-                var actionData = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(data);
-                
-                if (actionData != null && actionData.selectedImage != null)
+                var selectedImage = ParseJsonData(data);
+
+                if (!string.IsNullOrEmpty(selectedImage))
                 {
-                    string selectedImage = actionData.selectedImage.ToString();
-                    
                     // Determine if the selection was correct
                     bool isAISelected = (selectedImage == "left" && isLeftImageAI) || 
                                        (selectedImage == "right" && !isLeftImageAI);
@@ -377,6 +375,21 @@ namespace FormContents
             }
 
             return CommandResult.KeepOpen();
+        }
+
+        public string ParseJsonData(string data)
+        {
+            try
+            {
+                var actionData = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(data);
+                var selectedImage = actionData != null ? actionData["selectedImage"].ToString() : null;
+                return selectedImage;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error parsing JSON data: {ex.Message}");
+                return string.Empty;
+            }
         }
 
         private void ShowToastMessage(string message, MessageState state)
