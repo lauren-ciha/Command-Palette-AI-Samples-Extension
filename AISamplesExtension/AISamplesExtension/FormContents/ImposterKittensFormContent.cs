@@ -76,7 +76,7 @@ namespace FormContents
                                         {
                                             Id = "leftImageAction",
                                             Title = "Select Left Image",
-                                            Data = "{\"selectedImage\":\"left\"}"
+                                            Data = "{\"selectedImage\":\"left\"}",
                                         }
                                     }
                                 }
@@ -95,7 +95,7 @@ namespace FormContents
                                         {
                                             Id = "rightImageAction",
                                             Title = "Select Right Image",
-                                            Data = "{\"selectedImage\":\"right\"}"
+                                            Data = "{\"selectedImage\":\"right\"}",
                                         }
                                     }
                                 }
@@ -382,12 +382,12 @@ namespace FormContents
             try
             {
                 var actionData = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(data);
-                var selectedImage = actionData != null ? actionData["selectedImage"].ToString() : null;
+                var selectedImage = actionData != null ? actionData["selectedImage"] : null;
                 return selectedImage;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error parsing JSON data: {ex.Message}");
+                Debug.WriteLine("Error parsing JSON data");
                 return string.Empty;
             }
         }
