@@ -1,8 +1,15 @@
 using AdaptiveCards;
+using AIDevGallery.Sample.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FormContents
@@ -21,6 +28,7 @@ namespace FormContents
         public ImposterKittensFormContent()
         {
             CreateAdaptiveCard();
+            Task.Run(() => LoadStableDiffusion());
         }
 
         private void CreateAdaptiveCard()
@@ -91,6 +99,19 @@ namespace FormContents
             TemplateJson = adaptiveCard.ToJson();
         }
 
+        private async Task LoadStableDiffusion()
+        {
+            var hardwareAccelerator = HardwareAccelerator.CPU;
+            var parentFolder = System.IO.Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Models", @"onnx");
+            await Task.Run(() =>
+            {
+                stableDiffusion = new StableDiffusion(parentFolder, hardwareAccelerator);
+            });
+
+            modelReady = true;
+            Debug.WriteLine("modelReady is true in ImposterKittensFormContent");
+        }
+
         public void LoadImages(string leftImagePath, string rightImagePath, bool isLeftImageAI)
         {
             try
@@ -138,13 +159,185 @@ namespace FormContents
 
         public async Task LoadAIGeneratedImage()
         {
-            // Stub method for now - would eventually generate or fetch AI images
-            IsPageLoadingChanged?.Invoke(this, true);
-            
-            // Simulate some work
-            await Task.Delay(1000);
-            
-            IsPageLoadingChanged?.Invoke(this, false);
+            try
+            {
+                // Notify that we're loading
+                IsPageLoadingChanged?.Invoke(this, true);
+
+                if (!modelReady)
+                {
+                    ShowToastMessage("AI model is still loading. Please wait a moment and try again.", MessageState.Info);
+                    IsPageLoadingChanged?.Invoke(this, false);
+                    return;
+                }
+
+                // Generate an AI kitten image
+                string aiKittenImagePath = await GenerateKittenImage();
+
+                if (string.IsNullOrEmpty(aiKittenImagePath))
+                {
+                    ShowToastMessage("Failed to generate AI kitten image.", MessageState.Error);
+                    IsPageLoadingChanged?.Invoke(this, false);
+                    return;
+                }
+
+                // Get a real kitten image path from predefined set
+                string realKittenImagePath = GetRealKittenImagePath();
+
+                // Randomly decide whether to put AI image on left or right
+                bool placeAIOnLeft = new Random().Next(2) == 0;
+
+                // Load the images into the card
+                if (placeAIOnLeft)
+                {
+                    LoadImages(aiKittenImagePath, realKittenImagePath, true);
+                }
+                else
+                {
+                    LoadImages(realKittenImagePath, aiKittenImagePath, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowToastMessage($"Error loading AI-generated image: {ex.Message}", MessageState.Error);
+                IsPageLoadingChanged?.Invoke(this, false);
+            }
+        }
+
+        private async Task<string> GenerateKittenImage()
+        {
+            string generatedImagePath = string.Empty;
+            string kittenPrompt = "realistic kitten"; // Fixed prompt for kitten images
+
+            if (!modelReady || stableDiffusion == null)
+            {
+                Debug.WriteLine("StableDiffusion model is not ready or null");
+                return generatedImagePath;
+            }
+
+            if (inferenceTask != null)
+            {
+                Debug.WriteLine("Inference task is already running. Canceling previous task.");
+                cts.Cancel();
+                isCanceling = true;
+                await inferenceTask;
+                isCanceling = false;
+            }
+
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, timeoutCts.Token);
+            CancellationToken token = linkedCts.Token;
+
+            inferenceTask = Task.Run(
+                async () =>
+                {
+                    try
+                    {
+                        var result = stableDiffusion.Inference(kittenPrompt, token);
+                        Debug.WriteLine($"Inference result: {result}");
+
+                        if (result is Bitmap image)
+                        {
+                            string uniqueId = DateTime.Now.Ticks.ToString();
+                            string filePath = Path.Join(
+                                Windows.ApplicationModel.Package.Current.InstalledLocation.Path,
+                                "Assets",
+                                $"AI_Kitten_{uniqueId}.png");
+
+                            SaveBitmapAsPng(image, filePath);
+                            generatedImagePath = filePath;
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Inference did not return a valid image");
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (timeoutCts.IsCancellationRequested)
+                        {
+                            Debug.WriteLine("Image generation timed out");
+                            ShowToastMessage("Image generation timed out. Please try again.", MessageState.Info);
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Inference task was canceled");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error during inference: {ex}");
+                        ShowToastMessage($"Error generating image: {ex.Message}", MessageState.Error);
+                    }
+                },
+                token);
+
+            await inferenceTask;
+            inferenceTask = null;
+
+            return generatedImagePath;
+        }
+
+        private static void SaveBitmapAsPng(Bitmap bitmap, string filePath)
+        {
+            // Create directory if it doesn't exist
+            string? directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            bitmap.Save(filePath, ImageFormat.Png);
+        }
+
+        private string GetRealKittenImagePath()
+        {
+            try
+            {
+                // Get the base path to the Assets/Kittens directory
+                string kittensDirectory = Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Assets", "Kittens");
+
+                // Check if directory exists
+                if (!Directory.Exists(kittensDirectory))
+                {
+                    Debug.WriteLine($"Kittens directory not found: {kittensDirectory}");
+
+                    // Create the directory if it doesn't exist
+                    Directory.CreateDirectory(kittensDirectory);
+
+                    // Return a fallback image path since there are no images yet
+                    return Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Assets", "placeholder.png");
+                }
+
+                // Get all image files from the directory (supporting common image formats)
+                var imageFiles = Directory.GetFiles(kittensDirectory, "*.*")
+                    .Where(file =>
+                        file.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                        file.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                        file.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                        file.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
+                        file.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
+
+                // Check if we have any image files
+                if (imageFiles.Length == 0)
+                {
+                    Debug.WriteLine("No image files found in Kittens directory");
+                    return Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Assets", "placeholder.png");
+                }
+
+                // Pick a random file from the array
+                int randomIndex = new Random().Next(imageFiles.Length);
+                string selectedImagePath = imageFiles[randomIndex];
+
+                Debug.WriteLine($"Selected kitten image: {selectedImagePath}");
+                return selectedImagePath;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in GetRealKittenImagePath: {ex.Message}");
+                return Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Assets", "placeholder.png");
+            }
         }
 
         public override ICommandResult SubmitForm(string inputs, string data)
