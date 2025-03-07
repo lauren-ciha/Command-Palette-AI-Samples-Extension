@@ -58,10 +58,10 @@ internal sealed partial class AISamplesExtensionPage : ListPage
                 { "validation", ".*" },
                 { "error", "Prompt cannot be empty" }
             };
-            var textFormContent = new TextFormContent(new TemplateLoader().LoadTemplate("TextPageTemplate.json", false, imageTemplateReplacements));
+            var imageFormContent = new TextFormContent(new TemplateLoader().LoadTemplate("TextPageTemplate.json", false, imageTemplateReplacements));
             stopwatch.Stop();
             Debug.WriteLine($"TextFormContent construction time: {stopwatch.ElapsedMilliseconds} ms");
-            return textFormContent;
+            return imageFormContent;
         });
 
         // Initialize lazy loading for pages and models

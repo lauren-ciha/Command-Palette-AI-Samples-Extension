@@ -15,7 +15,7 @@ namespace Pages
         public TranscribeAudioPage(TranscribeAudioFormContent transcribeAudioFormContent)
         {
             Icon = new IconInfo("\uE720");
-            Title = "Trascribe Audio Page";
+            Title = "Transcribe Audio Page";
             Name = "Open";
             _formContent = transcribeAudioFormContent;
             _formContent.OnSubmit += FormContent_OnSubmit;
