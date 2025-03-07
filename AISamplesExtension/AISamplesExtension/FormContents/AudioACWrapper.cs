@@ -13,6 +13,7 @@ namespace FormContents
             markdownTextBlock = new AdaptiveTextBlock
             {
                 Text = "Press the Record button to start transcribing your audio.",
+                Style = AdaptiveTextBlockStyle.Heading,
                 Wrap = true
             };
 

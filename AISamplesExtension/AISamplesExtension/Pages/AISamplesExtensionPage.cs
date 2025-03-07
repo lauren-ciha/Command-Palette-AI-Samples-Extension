@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics;
 using AISamplesExtension.FormContents;
 using AISamplesExtension.Templates;
+using System.Collections.Generic;
 
 namespace AISamplesExtension;
 
@@ -19,10 +20,11 @@ internal sealed partial class AISamplesExtensionPage : ListPage
     private Lazy<GenerateImagePage> _generateImagePage;
     private Lazy<TranscribeAudioPage> _transcribeAudioPage;
     private Lazy<TextFormContent> _textFormContent;
+    private Lazy<TextFormContent> _imageFormContent;
 
     public AISamplesExtensionPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        Icon = new IconInfo("\uE99A");
         Title = "AI Samples Extension";
         Name = "Open";
 
@@ -30,10 +32,36 @@ internal sealed partial class AISamplesExtensionPage : ListPage
         _textFormContent = new Lazy<TextFormContent>(() =>
         {
             var stopwatch = Stopwatch.StartNew();
-            var textFormContent = new TextFormContent(new TemplateLoader().LoadTemplate("TextPageTemplate.json", false));
+            var textTemplateReplacements = new Dictionary<string, string>
+            {
+                { "title", "Generate Text" },
+                { "placeholder", "Enter a topic to generate text on..." },
+                { "id", "name" },
+                { "validation", ".*" },
+                { "error", "Prompt cannot be empty" }
+            };
+            var textFormContent = new TextFormContent(new TemplateLoader().LoadTemplate("TextPageTemplate.json", false, textTemplateReplacements));
             stopwatch.Stop();
             Debug.WriteLine($"TextFormContent construction time: {stopwatch.ElapsedMilliseconds} ms");
             return textFormContent;
+        });
+
+        // lazy initialize TextFormContent
+        _imageFormContent = new Lazy<TextFormContent>(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var imageTemplateReplacements = new Dictionary<string, string>
+            {
+                { "title", "Generate Image (Note: this may take a while)" },
+                { "placeholder", "Describe an image to generate..." },
+                { "id", "name" },
+                { "validation", ".*" },
+                { "error", "Prompt cannot be empty" }
+            };
+            var imageFormContent = new TextFormContent(new TemplateLoader().LoadTemplate("TextPageTemplate.json", false, imageTemplateReplacements));
+            stopwatch.Stop();
+            Debug.WriteLine($"TextFormContent construction time: {stopwatch.ElapsedMilliseconds} ms");
+            return imageFormContent;
         });
 
         // Initialize lazy loading for pages and models
@@ -49,7 +77,7 @@ internal sealed partial class AISamplesExtensionPage : ListPage
         _generateImagePage = new Lazy<GenerateImagePage>(() =>
         {
             var stopwatch = Stopwatch.StartNew();
-            var page = new GenerateImagePage(_textFormContent.Value);
+            var page = new GenerateImagePage(_imageFormContent.Value);
             stopwatch.Stop();
             Debug.WriteLine($"GenerateImagePage construction time: {stopwatch.ElapsedMilliseconds} ms");
             return page;

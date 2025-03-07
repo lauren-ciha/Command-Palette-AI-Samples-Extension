@@ -24,7 +24,7 @@ internal sealed partial class GenerateTextPage : ContentPage, IDisposable
 
     public GenerateTextPage(TextFormContent formContent)
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        Icon = new IconInfo("\uE7C3");
         Title = "Generate Page";
         Name = "Open";
         _formContent = formContent;

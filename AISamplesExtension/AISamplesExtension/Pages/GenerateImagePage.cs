@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using AISamplesExtension.Templates;
+using AdaptiveCards;
 
 namespace Pages
 {
@@ -30,7 +31,7 @@ namespace Pages
 
         public GenerateImagePage(TextFormContent textFormContent)
         {
-            Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+            Icon = new IconInfo("\uE8B9");
             Title = "Generate Image";
             Name = "Open";
             _textFormContent = textFormContent;
@@ -85,10 +86,14 @@ namespace Pages
                     await DoStableDiffusion(inputsString);
                     if (genImagePath != null)
                     {
-                        string imagePath = genImagePath;
-                        response.Body = $"See image below:\nImagePath:{imagePath}\n\n![Generated Image]({imagePath})";
-                        _contents.Insert(1, response);
-                        RaiseItemsChanged(_contents.Count);
+                        if (genImagePath != null)
+                        {
+                            string imagePath = genImagePath;
+                            response.Body = $@"![Generated Image]({imagePath})";
+
+                            _contents.Insert(1, response);
+                            RaiseItemsChanged(_contents.Count);
+                        }
                     }
                     else
                     {

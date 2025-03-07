@@ -54,19 +54,6 @@
           ]
         }
       ]
-    },
-    {
-      "size": "medium",
-      "text": "Output",
-      "type": "TextBlock",
-      "weight": "bolder",
-      "wrap": true
-    },
-    {
-      "type": "TextBlock",
-      "text": "",
-      "color": "transparent",
-      "wrap": true
     }
   ]
 }

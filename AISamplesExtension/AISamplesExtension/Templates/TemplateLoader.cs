@@ -9,18 +9,9 @@ namespace AISamplesExtension.Templates
     public class TemplateLoader
     {
 #pragma warning disable CA1822 // Mark members as static
-        public string LoadTemplate(string templateName, bool isSubmitEnabled)
+        public string LoadTemplate(string templateName, bool isSubmitEnabled, Dictionary<string, string> replacements)
 #pragma warning restore CA1822 // Mark members as static
         {
-            var replacements = new Dictionary<string, string>
-        {
-            { "title", "Generate Text" },
-            { "placeholder", "Enter a topic to generate text on..." },
-            { "id", "name" },
-            { "validation", ".*" },
-            { "error", "Name cannot be empty" }
-        };
-
             var templateLoader = new TemplateLoader();
             var parentFolder = System.IO.Path.Join(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, "Templates");
             var templateJson = templateLoader.ReplaceTemplateKeys(templateLoader.LoadTemplateAsync(Path.Combine(parentFolder, templateName)).Result, replacements);
