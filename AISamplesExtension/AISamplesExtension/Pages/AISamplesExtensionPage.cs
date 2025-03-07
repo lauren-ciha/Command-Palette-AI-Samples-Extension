@@ -19,8 +19,10 @@ internal sealed partial class AISamplesExtensionPage : ListPage
     private Lazy<GenerateTextPage> _generateTextPage;
     private Lazy<GenerateImagePage> _generateImagePage;
     private Lazy<TranscribeAudioPage> _transcribeAudioPage;
+    private Lazy<ImposterKittensPage> _imposterKittensPage; // Added for Imposter Kittens
     private Lazy<TextFormContent> _textFormContent;
     private Lazy<TextFormContent> _imageFormContent;
+    private Lazy<ImposterKittensFormContent> _imposterKittensFormContent; // Added for Imposter Kittens
 
     public AISamplesExtensionPage()
     {
@@ -64,6 +66,16 @@ internal sealed partial class AISamplesExtensionPage : ListPage
             return imageFormContent;
         });
 
+        // lazy initialize ImposterKittensFormContent
+        _imposterKittensFormContent = new Lazy<ImposterKittensFormContent>(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var formContent = new ImposterKittensFormContent();
+            stopwatch.Stop();
+            Debug.WriteLine($"ImposterKittensFormContent construction time: {stopwatch.ElapsedMilliseconds} ms");
+            return formContent;
+        });
+
         // Initialize lazy loading for pages and models
         _generateTextPage = new Lazy<GenerateTextPage>(() =>
         {
@@ -91,6 +103,16 @@ internal sealed partial class AISamplesExtensionPage : ListPage
             Debug.WriteLine($"TranscribeAudioPage construction time: {stopwatch.ElapsedMilliseconds} ms");
             return page;
         });
+
+        // Initialize lazy loading for Imposter Kittens page
+        _imposterKittensPage = new Lazy<ImposterKittensPage>(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var page = new ImposterKittensPage(_imposterKittensFormContent.Value);
+            stopwatch.Stop();
+            Debug.WriteLine($"ImposterKittensPage construction time: {stopwatch.ElapsedMilliseconds} ms");
+            return page;
+        });
     }
 
     public override IListItem[] GetItems()
@@ -102,6 +124,7 @@ internal sealed partial class AISamplesExtensionPage : ListPage
             new ListItem(_generateTextPage.Value) { Title = "Generate Text Page" },
             new ListItem(_generateImagePage.Value) { Title = "Generate Image Page" },
             new ListItem(_transcribeAudioPage.Value) { Title = "Transcribe Audio Page" },
+            new ListItem(_imposterKittensPage.Value) { Title = "Imposter Kittens Game" }, // Added the new page to the items
         };
 
         stopwatch.Stop(); // Stop timing
