@@ -20,6 +20,12 @@ namespace FormContents
         private string realImagePath = string.Empty;
         private string aiImagePath = string.Empty;
         private bool isLeftImageAI;
+        private CancellationTokenSource cts = new();
+        private StableDiffusion? stableDiffusion;
+        private bool isCanceling;
+        private Task? inferenceTask;
+        private string genImagePath;
+        private bool modelReady;
 
         // Events
         public event EventHandler<bool>? IsPageLoadingChanged;
