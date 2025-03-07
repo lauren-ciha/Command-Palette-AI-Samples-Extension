@@ -1,6 +1,7 @@
 using AdaptiveCards;
 using AIDevGallery.Sample.Utils;
 using AISamplesExtension.Helpers;
+using AISamplesExtension.Templates;
 using Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -14,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.UI.Shell;
 
 namespace FormContents
 {
@@ -37,79 +39,25 @@ namespace FormContents
         public event EventHandler? OnImageGeneratorLoaded;
         public event EventHandler<NotificationRaisedEventArgs>? OnNotificationRaised;
 
-        public ImposterKittensFormContent()
+        public ImposterKittensFormContent(string templateJson)
         {
-            Task.Run(() => LoadStableDiffusion());
             IsPageLoadingChanged?.Invoke(this, !modelReady);
-            CreateAdaptiveCard();
+            Task.Run(() => LoadStableDiffusion());
+            TemplateJson = templateJson;
+
+            // Initialize the adaptive card from the JSON string
+            var parseResult = AdaptiveCard.FromJson(templateJson);
+            adaptiveCard = parseResult.Card;
+            if (adaptiveCard.Body.Count < 3)
+            {
+                NotificationRaisedEventArgs args = new NotificationRaisedEventArgs("Adaptive card body does not contain enough elements.", MessageState.Error);
+                OnNotificationRaised?.Invoke(this, args);
+            }
         }
 
-        private void CreateAdaptiveCard()
+        public AdaptiveCard GetAdapativeCard()
         {
-            adaptiveCard = new AdaptiveCard("1.5")
-            {
-                Body = new List<AdaptiveElement>
-                    {
-                        new AdaptiveTextBlock
-                        {
-                            Text = "Imposter Kittens",
-                            Size = AdaptiveTextSize.Large,
-                            Weight = AdaptiveTextWeight.Bolder
-                        },
-                        new AdaptiveTextBlock
-                        {
-                            Text = "Click on the kitten that is AI-generated",
-                            Size = AdaptiveTextSize.Medium,
-                            Weight = AdaptiveTextWeight.Bolder
-                        },
-                        new AdaptiveColumnSet
-                        {
-                            Columns = new List<AdaptiveColumn>
-                            {
-                                new AdaptiveColumn
-                                {
-                                    Width = "1",
-                                    Items = new List<AdaptiveElement>
-                                    {
-                                        new AdaptiveImage
-                                        {
-                                            Id = "leftImage",
-                                            Url = new Uri("https://placeholder.com/300"),
-                                            Size = AdaptiveImageSize.Large,
-                                            SelectAction = new AdaptiveSubmitAction
-                                            {
-                                                Id = "leftImageAction",
-                                                Title = "Select Left Image",
-                                                Data = "{\"selectedImage\":\"left\"}",
-                                            }
-                                        }
-                                    }
-                                },
-                                new AdaptiveColumn
-                                {
-                                    Width = "1",
-                                    Items = new List<AdaptiveElement>
-                                    {
-                                        new AdaptiveImage
-                                        {
-                                            Id = "rightImage",
-                                            Url = new Uri("https://placeholder.com/300"),
-                                            Size = AdaptiveImageSize.Large,
-                                            SelectAction = new AdaptiveSubmitAction
-                                            {
-                                                Id = "rightImageAction",
-                                                Title = "Select Right Image",
-                                                Data = "{\"selectedImage\":\"right\"}",
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-            };
-
-            TemplateJson = adaptiveCard.ToJson();
+            return adaptiveCard;
         }
 
         private async Task LoadStableDiffusion()
@@ -136,6 +84,8 @@ namespace FormContents
                 this.isLeftImageAI = isLeftImageAI;
 
                 // Update the images in the adaptive card
+                var body = adaptiveCard.Body;
+
                 var columnSet = (AdaptiveColumnSet)adaptiveCard.Body[2];
 
                 var leftColumn = columnSet.Columns[0];

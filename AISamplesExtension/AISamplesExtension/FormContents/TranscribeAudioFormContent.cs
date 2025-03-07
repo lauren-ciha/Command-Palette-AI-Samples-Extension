@@ -17,7 +17,7 @@ namespace FormContents
 {
     public partial class TranscribeAudioFormContent : FormContent, IDisposable
     {
-        private AudioACWrapper adaptiveCard;
+        AudioACWrapper adaptiveCard;
         private bool isRecording;
         private MediaCapture mediaCapture;
         private InMemoryRandomAccessStream? audioStream;

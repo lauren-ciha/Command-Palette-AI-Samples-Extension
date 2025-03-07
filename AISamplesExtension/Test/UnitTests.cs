@@ -3,6 +3,7 @@ using FormContents;
 using System.Diagnostics;
 using AdaptiveCards;
 using System.Text.Json;
+using AISamplesExtension.Templates;
 
 namespace Test
 {
@@ -10,10 +11,10 @@ namespace Test
     public class ImposterKittensFormContentTests
     {
         [TestMethod]
-        public void LeftImageAction_Click_ReturnsValidJson()
+        public void LeftImageActionClickReturnsValidJson()
         {
             // Arrange
-            var formContent = new ImposterKittensFormContent();
+            var formContent = new ImposterKittensFormContent(new TemplateLoader().LoadTemplate("ImposterKittensTemplate.json", true, null));
             var leftImageAction = new AdaptiveSubmitAction
             {
                 Id = "leftImageAction",
@@ -27,7 +28,7 @@ namespace Test
             {
                 // validate jsonData is a valid Json string
                 var jsonDocument = JsonDocument.Parse(jsonData);
-                string result = formContent.ParseJsonData(jsonData);
+                string result = ImposterKittensFormContent.ParseJsonData(jsonData);
                 // Assert
                 Assert.AreEqual("left", result);
             }
@@ -39,14 +40,14 @@ namespace Test
         }
 
         [TestMethod]
-        public void RightImageAction_Click_ReturnsValidJson()
+        public void RightImageActionClickReturnsValidJson()
         {
             // Arrange
-            var formContent = new ImposterKittensFormContent();
+            var formContent = new ImposterKittensFormContent(new TemplateLoader().LoadTemplate("ImposterKittensTemplate.json", true, null));
             var rightImageAction = new AdaptiveSubmitAction
             {
-                Id = "leftImageAction",
-                Title = "Select Left Image",
+                Id = "rightImageAction",
+                Title = "Select Right Image",
                 Data = "{\"selectedImage\":\"right\"}"
             };
 
@@ -56,7 +57,7 @@ namespace Test
             {
                 // validate jsonData is a valid Json string
                 var jsonDocument = JsonDocument.Parse(jsonData);
-                string result = formContent.ParseJsonData(jsonData);
+                string result = ImposterKittensFormContent.ParseJsonData(jsonData);
                 // Assert
                 Assert.AreEqual("right", result);
             }
@@ -68,36 +69,51 @@ namespace Test
         }
 
         [TestMethod]
-        public void ParseJsonData_ValidJson_ReturnsExpectedValueWithExpectedStringRight()
+        public void ParseJsonDataValidJsonReturnsExpectedValueWithExpectedStringRight()
         {
-            var formContent = new ImposterKittensFormContent();
+            var formContent = new ImposterKittensFormContent(new TemplateLoader().LoadTemplate("ImposterKittensTemplate.json", true, null));
             string jsonData = "{\"selectedImage\":\"right\"}";
 
-            string result = formContent.ParseJsonData(jsonData);
+            string result = ImposterKittensFormContent.ParseJsonData(jsonData);
 
             Assert.AreEqual("right", result);
         }
 
         [TestMethod]
-        public void ParseJsonData_ValidJson_ReturnsExpectedValueWithExpectedStringLeft()
+        public void ParseJsonDataValidJsonReturnsExpectedValueWithExpectedStringLeft()
         {
-            var formContent = new ImposterKittensFormContent();
+            var formContent = new ImposterKittensFormContent(new TemplateLoader().LoadTemplate("ImposterKittensTemplate.json", true, null));
             string jsonData = "{\"selectedImage\":\"left\"}";
 
-            string result = formContent.ParseJsonData(jsonData);
+            string result = ImposterKittensFormContent.ParseJsonData(jsonData);
 
             Assert.AreEqual("left", result);
         }
 
         [TestMethod]
-        public void ParseJsonData_InvalidJson_ReturnsEmptyString()
+        public void ParseJsonDataInvalidJsonReturnsEmptyString()
         {
-            var formContent = new ImposterKittensFormContent();
+            var formContent = new ImposterKittensFormContent(new TemplateLoader().LoadTemplate("ImposterKittensTemplate.json", true, null));
             string invalidJsonData = "{\"selectedImage\":\"left\",\"Id\":\"leftImageAction\"";
 
-            string result = formContent.ParseJsonData(invalidJsonData);
+            string result = ImposterKittensFormContent.ParseJsonData(invalidJsonData);
 
             Assert.AreEqual(string.Empty, result);
+        }
+
+        [TestMethod]
+        public void ValidateJsonFromTemplateParsesIntoAdaptiveCardCorrectly()
+        {
+            // Arrange
+            var templateLoader = new TemplateLoader();
+            var template = templateLoader.LoadTemplate("ImposterKittensTemplate.json", true, null);
+            var formContent = new ImposterKittensFormContent(template);
+            // Act
+            var adaptiveCard = formContent.GetAdapativeCard();
+            // Assert
+            Assert.IsNotNull(adaptiveCard);
+            Assert.IsNotNull((AdaptiveColumnSet)adaptiveCard.Body[2]);
+            Assert.AreEqual(2, adaptiveCard.Body.Count);
         }
     }
 }

@@ -39,12 +39,15 @@ namespace AISamplesExtension.Templates
         }
 
 #pragma warning disable CA1822 // Mark members as static
-        public string ReplaceTemplateKeys(string template, Dictionary<string, string> replacements)
+        public string ReplaceTemplateKeys(string template, Dictionary<string, string>? replacements)
 #pragma warning restore CA1822 // Mark members as static
         {
             ArgumentNullException.ThrowIfNull(template);
 
-            ArgumentNullException.ThrowIfNull(replacements);
+            if (replacements == null)
+            {
+                return template;
+            }
 
             foreach (var replacement in replacements)
             {

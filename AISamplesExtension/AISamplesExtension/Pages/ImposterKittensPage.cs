@@ -70,7 +70,7 @@ namespace Pages
             LoadNewImages();
         }
 
-        private bool IsImageAIGenerated(string imagePath)
+        private static bool IsImageAIGenerated(string imagePath)
         {
             // Stub implementation - in a real app, you would determine this based 
             // on the actual image properties or metadata

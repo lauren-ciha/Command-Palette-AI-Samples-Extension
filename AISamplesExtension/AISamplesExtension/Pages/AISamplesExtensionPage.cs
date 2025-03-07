@@ -11,6 +11,7 @@ using System.Diagnostics;
 using AISamplesExtension.FormContents;
 using AISamplesExtension.Templates;
 using System.Collections.Generic;
+using Windows.Graphics.Printing.PrintSupport;
 
 namespace AISamplesExtension;
 
@@ -22,13 +23,23 @@ internal sealed partial class AISamplesExtensionPage : ListPage
     private Lazy<ImposterKittensPage> _imposterKittensPage; // Added for Imposter Kittens
     private Lazy<TextFormContent> _textFormContent;
     private Lazy<TextFormContent> _imageFormContent;
-    private Lazy<ImposterKittensFormContent> _imposterKittensFormContent; // Added for Imposter Kittens
+    private Lazy<ImposterKittensFormContent> _imposterKittensFormContent;
 
     public AISamplesExtensionPage()
     {
         Icon = new IconInfo("\uE99A");
         Title = "AI Samples Extension";
         Name = "Open";
+
+        // lazy initilaize ImposterKittensFormContent
+        _imposterKittensFormContent = new Lazy<ImposterKittensFormContent>(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var formContent = new ImposterKittensFormContent(new TemplateLoader().LoadTemplate("ImposterKittensTemplate.json", true, null));
+            stopwatch.Stop();
+            Debug.WriteLine($"ImposterKittensFormContent construction time: {stopwatch.ElapsedMilliseconds} ms");
+            return formContent;
+        });
 
         // lazy initialize TextFormContent
         _textFormContent = new Lazy<TextFormContent>(() =>
@@ -64,16 +75,6 @@ internal sealed partial class AISamplesExtensionPage : ListPage
             stopwatch.Stop();
             Debug.WriteLine($"TextFormContent construction time: {stopwatch.ElapsedMilliseconds} ms");
             return imageFormContent;
-        });
-
-        // lazy initialize ImposterKittensFormContent
-        _imposterKittensFormContent = new Lazy<ImposterKittensFormContent>(() =>
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var formContent = new ImposterKittensFormContent();
-            stopwatch.Stop();
-            Debug.WriteLine($"ImposterKittensFormContent construction time: {stopwatch.ElapsedMilliseconds} ms");
-            return formContent;
         });
 
         // Initialize lazy loading for pages and models

@@ -1,0 +1,64 @@
+﻿{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.6",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Imposter Kittens",
+      "size": "large",
+      "weight": "bolder"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Click on the kitten that is AI-generated",
+      "size": "Medium",
+      "weight": "Bolder"
+    },
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "1",
+          "items": [
+            {
+              "type": "Image",
+              "id": "leftImage",
+              "url": "https://via.placeholder.com/300",
+              "size": "Medium",
+              "selectAction": {
+                "type": "Action.Submit",
+                "id": "leftImageAction",
+                "title": "Select Left Image",
+                "data": {
+                  "selectedImage": "left"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Column",
+          "width": "1",
+          "items": [
+            {
+              "type": "Image",
+              "id": "rightImage",
+              "url": "https://via.placeholder.com/300",
+              "size": "Medium",
+              "selectAction": {
+                "type": "Action.Submit",
+                "id": "rightImageAction",
+                "title": "Select Right Image",
+                "data": {
+                  "selectedImage": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
