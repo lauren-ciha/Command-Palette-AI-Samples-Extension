@@ -1,5 +1,7 @@
 using AdaptiveCards;
 using AIDevGallery.Sample.Utils;
+using AISamplesExtension.Helpers;
+using Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Newtonsoft.Json;
@@ -15,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace FormContents
 {
-    public class ImposterKittensFormContent : FormContent
+    public partial class ImposterKittensFormContent : FormContent, IDisposable
     {
         private AdaptiveCard adaptiveCard;
         private string realImagePath = string.Empty;
@@ -25,7 +27,7 @@ namespace FormContents
         private StableDiffusion? stableDiffusion;
         private bool isCanceling;
         private Task? inferenceTask;
-        private string genImagePath;
+        private string genImagePath = string.Empty;
         private bool modelReady;
 
         // Events
@@ -33,10 +35,12 @@ namespace FormContents
         public event EventHandler<string>? OnGuessSubmit;
         public event EventHandler? OnImagesLoaded;
         public event EventHandler? OnImageGeneratorLoaded;
+        public event EventHandler<NotificationRaisedEventArgs>? OnNotificationRaised;
 
         public ImposterKittensFormContent()
         {
             Task.Run(() => LoadStableDiffusion());
+            IsPageLoadingChanged?.Invoke(this, !modelReady);
             CreateAdaptiveCard();
         }
 
@@ -45,64 +49,64 @@ namespace FormContents
             adaptiveCard = new AdaptiveCard("1.5")
             {
                 Body = new List<AdaptiveElement>
-                {
-                    new AdaptiveTextBlock
                     {
-                        Text = "Imposter Kittens",
-                        Size = AdaptiveTextSize.Large,
-                        Weight = AdaptiveTextWeight.Bolder
-                    },
-                    new AdaptiveTextBlock
-                    {
-                        Text = "Click on the kitten that is AI-generated",
-                        Size = AdaptiveTextSize.Medium,
-                        Weight = AdaptiveTextWeight.Bolder
-                    },
-                    new AdaptiveColumnSet
-                    {
-                        Columns = new List<AdaptiveColumn>
+                        new AdaptiveTextBlock
                         {
-                            new AdaptiveColumn
+                            Text = "Imposter Kittens",
+                            Size = AdaptiveTextSize.Large,
+                            Weight = AdaptiveTextWeight.Bolder
+                        },
+                        new AdaptiveTextBlock
+                        {
+                            Text = "Click on the kitten that is AI-generated",
+                            Size = AdaptiveTextSize.Medium,
+                            Weight = AdaptiveTextWeight.Bolder
+                        },
+                        new AdaptiveColumnSet
+                        {
+                            Columns = new List<AdaptiveColumn>
                             {
-                                Width = "1",
-                                Items = new List<AdaptiveElement>
+                                new AdaptiveColumn
                                 {
-                                    new AdaptiveImage
+                                    Width = "1",
+                                    Items = new List<AdaptiveElement>
                                     {
-                                        Id = "leftImage",
-                                        Url = new Uri("https://placeholder.com/300"),
-                                        Size = AdaptiveImageSize.Large,
-                                        SelectAction = new AdaptiveSubmitAction
+                                        new AdaptiveImage
                                         {
-                                            Id = "leftImageAction",
-                                            Title = "Select Left Image",
-                                            Data = "{\"selectedImage\":\"left\"}",
+                                            Id = "leftImage",
+                                            Url = new Uri("https://placeholder.com/300"),
+                                            Size = AdaptiveImageSize.Large,
+                                            SelectAction = new AdaptiveSubmitAction
+                                            {
+                                                Id = "leftImageAction",
+                                                Title = "Select Left Image",
+                                                Data = "{\"selectedImage\":\"left\"}",
+                                            }
                                         }
                                     }
-                                }
-                            },
-                            new AdaptiveColumn
-                            {
-                                Width = "1",
-                                Items = new List<AdaptiveElement>
+                                },
+                                new AdaptiveColumn
                                 {
-                                    new AdaptiveImage
+                                    Width = "1",
+                                    Items = new List<AdaptiveElement>
                                     {
-                                        Id = "rightImage",
-                                        Url = new Uri("https://placeholder.com/300"),
-                                        Size = AdaptiveImageSize.Large,
-                                        SelectAction = new AdaptiveSubmitAction
+                                        new AdaptiveImage
                                         {
-                                            Id = "rightImageAction",
-                                            Title = "Select Right Image",
-                                            Data = "{\"selectedImage\":\"right\"}",
+                                            Id = "rightImage",
+                                            Url = new Uri("https://placeholder.com/300"),
+                                            Size = AdaptiveImageSize.Large,
+                                            SelectAction = new AdaptiveSubmitAction
+                                            {
+                                                Id = "rightImageAction",
+                                                Title = "Select Right Image",
+                                                Data = "{\"selectedImage\":\"right\"}",
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                }
             };
 
             TemplateJson = adaptiveCard.ToJson();
@@ -130,10 +134,10 @@ namespace FormContents
                 IsPageLoadingChanged?.Invoke(this, true);
 
                 this.isLeftImageAI = isLeftImageAI;
-                
+
                 // Update the images in the adaptive card
                 var columnSet = (AdaptiveColumnSet)adaptiveCard.Body[2];
-                
+
                 var leftColumn = columnSet.Columns[0];
                 var leftImage = (AdaptiveImage)leftColumn.Items[0];
                 leftImage.Url = new Uri(leftImagePath);
@@ -161,7 +165,7 @@ namespace FormContents
             }
             catch (Exception ex)
             {
-                ShowToastMessage($"Error loading images: {ex.Message}", MessageState.Error);
+                OnNotificationRaised?.Invoke(this, new NotificationRaisedEventArgs($"Error loading images: {ex.Message}", MessageState.Error));
                 IsPageLoadingChanged?.Invoke(this, false);
             }
         }
@@ -175,7 +179,7 @@ namespace FormContents
 
                 if (!modelReady)
                 {
-                    ShowToastMessage("AI model is still loading. Please wait a moment and try again.", MessageState.Info);
+                    OnNotificationRaised?.Invoke(this, new NotificationRaisedEventArgs("Model is not ready. Please try again later.", MessageState.Error));
                     IsPageLoadingChanged?.Invoke(this, false);
                     return;
                 }
@@ -185,7 +189,7 @@ namespace FormContents
 
                 if (string.IsNullOrEmpty(aiKittenImagePath))
                 {
-                    ShowToastMessage("Failed to generate AI kitten image.", MessageState.Error);
+                    OnNotificationRaised?.Invoke(this, new NotificationRaisedEventArgs("Failed to generate AI image. Please try again.", MessageState.Error));
                     IsPageLoadingChanged?.Invoke(this, false);
                     return;
                 }
@@ -208,7 +212,7 @@ namespace FormContents
             }
             catch (Exception ex)
             {
-                ShowToastMessage($"Error loading AI-generated image: {ex.Message}", MessageState.Error);
+                OnNotificationRaised?.Invoke(this, new NotificationRaisedEventArgs($"Error loading AI-generated image: {ex.Message}", MessageState.Error));
                 IsPageLoadingChanged?.Invoke(this, false);
             }
         }
@@ -247,13 +251,13 @@ namespace FormContents
 
                         if (result is Bitmap image)
                         {
-                            string uniqueId = DateTime.Now.Ticks.ToString();
+                            string uniqueId = DateTime.Now.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture);
                             string filePath = Path.Join(
                                 Windows.ApplicationModel.Package.Current.InstalledLocation.Path,
                                 "Assets",
                                 $"AI_Kitten_{uniqueId}.png");
 
-                            SaveBitmapAsPng(image, filePath);
+                            ImageHelper.SaveBitmapAsPng(image, filePath);
                             generatedImagePath = filePath;
                         }
                         else
@@ -266,7 +270,7 @@ namespace FormContents
                         if (timeoutCts.IsCancellationRequested)
                         {
                             Debug.WriteLine("Image generation timed out");
-                            ShowToastMessage("Image generation timed out. Please try again.", MessageState.Info);
+                            OnNotificationRaised?.Invoke(this, new NotificationRaisedEventArgs("Image generation timed out. Please try again.", MessageState.Info));
                         }
                         else
                         {
@@ -276,7 +280,7 @@ namespace FormContents
                     catch (Exception ex)
                     {
                         Debug.WriteLine($"Error during inference: {ex}");
-                        ShowToastMessage($"Error generating image: {ex.Message}", MessageState.Error);
+                        OnNotificationRaised?.Invoke(this, new NotificationRaisedEventArgs($"Error during inference: {ex.Message}", MessageState.Error));
                     }
                 },
                 token);
@@ -287,19 +291,7 @@ namespace FormContents
             return generatedImagePath;
         }
 
-        private static void SaveBitmapAsPng(Bitmap bitmap, string filePath)
-        {
-            // Create directory if it doesn't exist
-            string? directory = Path.GetDirectoryName(filePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            bitmap.Save(filePath, ImageFormat.Png);
-        }
-
-        private string GetRealKittenImagePath()
+        private static string GetRealKittenImagePath()
         {
             try
             {
@@ -358,32 +350,32 @@ namespace FormContents
                 if (!string.IsNullOrEmpty(selectedImage))
                 {
                     // Determine if the selection was correct
-                    bool isAISelected = (selectedImage == "left" && isLeftImageAI) || 
+                    bool isAISelected = (selectedImage == "left" && isLeftImageAI) ||
                                        (selectedImage == "right" && !isLeftImageAI);
-                    
+
                     // Raise event with the selected image path
-                    string selectedImagePath = selectedImage == "left" ? 
-                        (isLeftImageAI ? aiImagePath : realImagePath) : 
+                    string selectedImagePath = selectedImage == "left" ?
+                        (isLeftImageAI ? aiImagePath : realImagePath) :
                         (isLeftImageAI ? realImagePath : aiImagePath);
-                    
+
                     OnGuessSubmit?.Invoke(this, selectedImagePath);
                 }
             }
             catch (Exception ex)
             {
-                ShowToastMessage($"Error processing selection: {ex.Message}", MessageState.Error);
+                OnNotificationRaised?.Invoke(this, new NotificationRaisedEventArgs($"Error processing selection: {ex.Message}", MessageState.Error));
             }
 
             return CommandResult.KeepOpen();
         }
 
-        public string ParseJsonData(string data)
+        public static string ParseJsonData(string data)
         {
             try
             {
                 var actionData = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(data);
                 var selectedImage = actionData != null ? actionData["selectedImage"] : null;
-                return selectedImage;
+                return selectedImage ?? string.Empty;
             }
             catch
             {
@@ -392,15 +384,10 @@ namespace FormContents
             }
         }
 
-        private void ShowToastMessage(string message, MessageState state)
+        public void Dispose()
         {
-            var statusMessage = new StatusMessage
-            {
-                Message = message,
-                State = state,
-            };
-            var toast = new ToastStatusMessage(statusMessage);
-            toast.Show();
+            cts.Dispose();
+            stableDiffusion?.Dispose();
         }
     }
 }

@@ -24,6 +24,10 @@ namespace Pages
             _formContent.OnGuessSubmit += FormContent_OnGuessSubmit;
             _formContent.OnImagesLoaded += FormContent_OnImagesLoaded;
             _formContent.OnImageGeneratorLoaded += _formContent_OnImageGeneratorLoaded;
+            _formContent.OnNotificationRaised += (s, e) =>
+            {
+                ShowToastMessage(e.NotificationMessage, e.State);
+            };
 
             _contents = new List<IContent>();
             _contents.Add(_formContent);
@@ -55,21 +59,11 @@ namespace Pages
 
             if (isSelectedAI)
             {
-                var statusMessage = new StatusMessage
-                {
-                    Message = "Correct!",
-                    State = MessageState.Success,
-                };
-                new ToastStatusMessage(statusMessage).Show();
+                ShowToastMessage("Correct! You found the AI-generated image.", MessageState.Success);
             }
             else
             {
-                var statusMessage = new StatusMessage
-                {
-                    Message = "Incorrect! Try again!",
-                    State = MessageState.Error,
-                };
-                new ToastStatusMessage(statusMessage).Show();
+                ShowToastMessage("Incorrect! Try again.", MessageState.Error);
             }
 
             // Load new images for next round
@@ -114,6 +108,17 @@ namespace Pages
         public override IContent[] GetContent()
         {
             return _contents.ToArray();
+        }
+
+        private void ShowToastMessage(string message, MessageState state)
+        {
+            var statusMessage = new StatusMessage
+            {
+                Message = message,
+                State = state,
+            };
+            var toast = new ToastStatusMessage(statusMessage);
+            toast.Show();
         }
     }
 }
