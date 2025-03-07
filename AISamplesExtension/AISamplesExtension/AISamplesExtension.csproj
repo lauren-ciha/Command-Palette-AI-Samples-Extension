@@ -60,6 +60,9 @@
     <PackageReference Include="NumSharp" />
     <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets\Kittens\" />
+  </ItemGroup>
     
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
