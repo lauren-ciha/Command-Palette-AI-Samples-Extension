@@ -30,11 +30,13 @@ namespace FormContents
         // Events
         public event EventHandler<bool>? IsPageLoadingChanged;
         public event EventHandler<string>? OnGuessSubmit;
+        public event EventHandler? OnImagesLoaded;
+        public event EventHandler? OnImageGeneratorLoaded;
 
         public ImposterKittensFormContent()
         {
-            CreateAdaptiveCard();
             Task.Run(() => LoadStableDiffusion());
+            CreateAdaptiveCard();
         }
 
         private void CreateAdaptiveCard()
@@ -116,6 +118,7 @@ namespace FormContents
 
             modelReady = true;
             Debug.WriteLine("modelReady is true in ImposterKittensFormContent");
+            OnImageGeneratorLoaded?.Invoke(this, EventArgs.Empty);
         }
 
         public void LoadImages(string leftImagePath, string rightImagePath, bool isLeftImageAI)
@@ -150,10 +153,9 @@ namespace FormContents
                     aiImagePath = rightImagePath;
                 }
 
-                // Update the template JSON
                 TemplateJson = adaptiveCard.ToJson();
 
-                // Notify that we're done loading
+                OnImagesLoaded?.Invoke(this, EventArgs.Empty);
                 IsPageLoadingChanged?.Invoke(this, false);
             }
             catch (Exception ex)

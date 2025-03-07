@@ -22,12 +22,24 @@ namespace Pages
             _formContent = formContent;
             _formContent.IsPageLoadingChanged += FormContent_IsPageLoadingChanged;
             _formContent.OnGuessSubmit += FormContent_OnGuessSubmit;
+            _formContent.OnImagesLoaded += FormContent_OnImagesLoaded;
+            _formContent.OnImageGeneratorLoaded += _formContent_OnImageGeneratorLoaded;
 
             _contents = new List<IContent>();
             _contents.Add(_formContent);
+        }
 
-            // Initially load some images
+        private void _formContent_OnImageGeneratorLoaded(object? sender, EventArgs e)
+        {
             LoadNewImages();
+        }
+
+        private void FormContent_OnImagesLoaded(object? sender, EventArgs e)
+        {
+            Debug.WriteLine("Images loaded in ImposterKittensFormContent");
+
+            // Notify the UI to refresh and show the updated adaptive card with images
+            RaiseItemsChanged(_contents.Count);
         }
 
         private void FormContent_IsPageLoadingChanged(object? sender, bool isLoading)
@@ -78,25 +90,13 @@ namespace Pages
         {
             try
             {
-                // This is a stub implementation
-                // In a real app, you would load actual images from a repository
+                // Instead of loading static images, use the LoadAIGeneratedImage method
+                // which will generate a new AI image and get a random real kitten image
+                _ = _formContent.LoadAIGeneratedImage();
 
-                // Randomly decide which side will have the AI-generated image
-                bool isLeftImageAI = _random.Next(2) == 0;
-
-                // Example file paths - in a real app these would point to actual images
-                string leftPath = isLeftImageAI
-                    ? "file:///C:/SampleImages/AI-Kitten1.png"
-                    : "file:///C:/SampleImages/Real-Kitten1.png";
-
-                string rightPath = isLeftImageAI
-                    ? "file:///C:/SampleImages/Real-Kitten2.png"
-                    : "file:///C:/SampleImages/AI-Kitten2.png";
-
-                _formContent.LoadImages(leftPath, rightPath, isLeftImageAI);
-
-                // Notify that the content has changed
-                RaiseItemsChanged(_contents.Count);
+                // Note: We don't need to call RaiseItemsChanged here anymore
+                // since it will be called by the FormContent_OnImagesLoaded event handler
+                // when the images are actually loaded.
             }
             catch (Exception ex)
             {
